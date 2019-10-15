@@ -2290,7 +2290,7 @@ status_t MMC_Init(mmc_card_t *card)
         return kStatus_SDMMC_GoIdleFailed;
     }
 
-    /* Hand-shaking with card to validata the voltage range Host first sending its expected
+    /* Hand-shaking with card to validate the voltage range Host first sending its expected
        information.*/
     if (kStatus_Success != MMC_SendOperationCondition(card, 0U))
     {
@@ -2446,7 +2446,7 @@ status_t MMC_BL_Init(mmc_card_t *card)
         return kStatus_SDMMC_GoIdleFailed;
     }
 
-    /* Hand-shaking with card to validata the voltage range Host first sending its expected
+    /* Hand-shaking with card to validate the voltage range Host first sending its expected
        information.*/
     if (kStatus_Success != MMC_BL_SendOperationCondition(card, 0U))
     {
