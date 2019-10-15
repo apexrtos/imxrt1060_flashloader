@@ -1541,7 +1541,7 @@ static status_t MMC_BL_SwitchToHighSpeed(mmc_card_t *card, uint32_t freq)
     return kStatus_Success;
 }
 
-static status_t MMC_BL_SwitchToNomralSpeed(mmc_card_t *card)
+static status_t MMC_BL_SwitchToNormalSpeed(mmc_card_t *card)
 {
     assert(card);
 
@@ -1890,7 +1890,7 @@ static status_t MMC_BL_SelectBusTiming(mmc_card_t *card)
             }
         case kMMC_HighSpeedTimingNone:
         default:
-            return MMC_BL_SwitchToNomralSpeed(card);
+            return MMC_BL_SwitchToNormalSpeed(card);
     }
 }
 
