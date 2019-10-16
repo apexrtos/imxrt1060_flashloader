@@ -59,7 +59,7 @@ typedef struct _sd_config
             uint32_t rsv3 : 2;
             uint32_t powerPolarity : 1;
             uint32_t powerDownTime : 2;
-            uint32_t rsv4 : 2;
+            uint32_t uSDHCInstance : 2;
             uint32_t tag : 4;
         } B;
         uint32_t U;
@@ -292,9 +292,6 @@ status_t sd_mem_init(void)
 {
     status_t status = kStatus_Success;
     sd_card_t *card = &s_sdContext.sd;
-    // Init the basic variable, fill in the uSDHC base address and current frequency.
-    card->host.base = BOARD_SD_HOST_BASEADDR;
-    card->host.sourceClock_Hz = SD_HOST_CLK_FREQ;
 
     status = get_sd_default_configuration(card);
     if (status != kStatus_Success)
@@ -370,8 +367,19 @@ status_t sd_mem_config(uint32_t *config)
 
     sd_card_t *card = &s_sdContext.sd;
 
-    card->host.base = BOARD_SD_HOST_BASEADDR;
-    card->host.sourceClock_Hz = SD_HOST_CLK_FREQ;
+    switch( sdConfig->word0.B.uSDHCInstance )
+    {
+        default:
+        case kSDMMC_USDHC_INSTANCE_1:
+            card->host.base = USDHC1;
+            card->host.sourceClock_Hz = BOARD_USDHC1_CLK_FREQ;
+            break;
+
+        case kSDMMC_USDHC_INSTANCE_2:
+            card->host.base = USDHC2;
+            card->host.sourceClock_Hz = BOARD_USDHC2_CLK_FREQ;
+            break;
+    }
 
     card->userConfig.timing = (sd_timing_mode_t)sdConfig->word0.B.timing_interface;
     card->userConfig.busWidth = (sd_data_bus_width_t)sdConfig->word0.B.bus_width;

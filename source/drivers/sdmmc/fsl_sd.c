@@ -1733,14 +1733,14 @@ status_t SD_BL_Init(sd_card_t *card)
     /* execute the power cycle here */
     if ((card->userConfig.enablePowerCycle) || (isUHSImode))
     {
-        HOST_INIT_SD_POWER();
+        HOST_INIT_SD_POWER(card->host.base);
 
         /* card power off */
-        HOST_ENABLE_SD_POWER(card->userConfig.powerPolarity);
+        HOST_ENABLE_SD_POWER(card->host.base, card->userConfig.powerPolarity);
         /* Delay some time to make card stable. */
         microseconds_delay(card->userConfig.powerDownDelay_US);
         /* card power on */
-        HOST_ENABLE_SD_POWER(!card->userConfig.powerPolarity);
+        HOST_ENABLE_SD_POWER(card->host.base, !card->userConfig.powerPolarity);
         /* Delay some time to make card stable. */
         microseconds_delay(card->userConfig.powerUpDelay_US);
     }
@@ -1750,7 +1750,7 @@ status_t SD_BL_Init(sd_card_t *card)
         /* UHSI mode only supports 4bit. Update to 4bit mode even config 1bit. */
         card->userConfig.busWidth = kSD_DataBusWidth4Bit;
         /* init vselect pin */
-        HOST_INIT_SD_VSEL();
+        HOST_INIT_SD_VSEL(card->host.base);
     }
 
     /*detect card insert*/

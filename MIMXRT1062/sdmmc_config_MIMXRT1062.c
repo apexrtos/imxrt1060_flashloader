@@ -23,42 +23,32 @@
 #define SD_SELECT (1)
 #define MMC_SELECT (2)
 
-#if BL_FEATURE_MMC_MODULE
-#if BL_FEATURE_MMC_MODULE_PERIPHERAL_INSTANCE == 1
-#define MMC_SELECTED_INSTANCE (0)
-#define ROM_OCOTP_MMC_RST_ACTIVE_POLARITY_VALUE() ROM_OCOTP_SD1_RST_ACTIVE_POLARITY_VALUE()
-#define ROM_OCOTP_MMC_VOLTAGE_SELECTION_VALUE() ROM_OCOTP_SD1_VOLTAGE_SELECTION_VALUE()
-#elif BL_FEATURE_MMC_MODULE_PERIPHERAL_INSTANCE == 2
-#define MMC_SELECTED_INSTANCE (1)
-#define ROM_OCOTP_MMC_RST_ACTIVE_POLARITY_VALUE() ROM_OCOTP_SD2_RST_ACTIVE_POLARITY_VALUE()
-#define ROM_OCOTP_MMC_VOLTAGE_SELECTION_VALUE() ROM_OCOTP_SD2_VOLTAGE_SELECTION_VALUE()
-#else
-#error "incorrect MMC instance."
-#endif
-#endif // #if BL_FEATURE_MMC_MODULE
-
-#if BL_FEATURE_SD_MODULE
-#if BL_FEATURE_SD_MODULE_PERIPHERAL_INSTANCE == 1
-#define SD_SELECTED_INSTANCE (0)
-#define ROM_OCOTP_SD_RST_ACTIVE_POLARITY_VALUE() ROM_OCOTP_SD1_RST_ACTIVE_POLARITY_VALUE()
-#define ROM_OCOTP_SD_VOLTAGE_SELECTION_VALUE() ROM_OCOTP_SD1_VOLTAGE_SELECTION_VALUE()
-#elif BL_FEATURE_SD_MODULE_PERIPHERAL_INSTANCE == 2
-#define SD_SELECTED_INSTANCE (1)
-#define ROM_OCOTP_SD_RST_ACTIVE_POLARITY_VALUE() ROM_OCOTP_SD2_RST_ACTIVE_POLARITY_VALUE()
-#define ROM_OCOTP_SD_VOLTAGE_SELECTION_VALUE() ROM_OCOTP_SD2_VOLTAGE_SELECTION_VALUE()
-#else
-#error "incorrect SD instance."
-#endif
-#endif // #if BL_FEATURE_SD_MODULE
-
 /*******************************************************************************
  * Code
  ******************************************************************************/
 #if BL_FEATURE_MMC_MODULE
 status_t get_mmc_default_configuration(mmc_card_t *card)
 {
-    if ((ROM_OCOTP_SDMMC_TYPE_SEL_VALUE() == MMC_SELECT) && (ROM_OCOTP_SDMMC_PORT_SEL_VALUE() == MMC_SELECTED_INSTANCE))
+    if (ROM_OCOTP_SDMMC_TYPE_SEL_VALUE() == MMC_SELECT)
     {
+        switch(ROM_OCOTP_SDMMC_PORT_SEL_VALUE())
+        {
+            default:
+            case kSDMMC_USDHC_INSTANCE_1:
+                card->host.base = BOARD_USDHC1_BASEADDR;
+                card->host.sourceClock_Hz = BOARD_USDHC1_CLK_FREQ;
+                card->userConfig.powerPolarity = ROM_OCOTP_SD1_RST_ACTIVE_POLARITY_VALUE();
+                card->userConfig.switch1V8 = ROM_OCOTP_SD1_VOLTAGE_SELECTION_VALUE();
+                break;
+
+            case kSDMMC_USDHC_INSTANCE_2:
+                card->host.base = BOARD_USDHC2_BASEADDR;
+                card->host.sourceClock_Hz = BOARD_USDHC2_CLK_FREQ;
+                card->userConfig.powerPolarity = ROM_OCOTP_SD2_RST_ACTIVE_POLARITY_VALUE();
+                card->userConfig.switch1V8 = ROM_OCOTP_SD2_VOLTAGE_SELECTION_VALUE();
+                break;
+        }
+
         card->userConfig.timing = (mmc_high_speed_timing_t)ROM_OCOTP_MMC_SPEED_VALUE();
 
         switch (ROM_OCOTP_MMC_BUS_WIDTH_VALUE())
@@ -79,7 +69,6 @@ status_t get_mmc_default_configuration(mmc_card_t *card)
         }
 
         card->userConfig.enablePowerCycle = ROM_OCOTP_SDMMC_POWER_CYCLE_ENABLE_VALUE();
-        card->userConfig.powerPolarity = ROM_OCOTP_MMC_RST_ACTIVE_POLARITY_VALUE();
 
         switch (ROM_OCOTP_SDMMC_PWR_CYCLE_SEL_VALUE())
         {
@@ -108,7 +97,6 @@ status_t get_mmc_default_configuration(mmc_card_t *card)
                 card->userConfig.powerUpDelay_US = 25 * 100;
                 break;
         }
-        card->userConfig.switch1V8 = ROM_OCOTP_MMC_VOLTAGE_SELECTION_VALUE();
 
         return kStatus_Success;
     }
@@ -116,6 +104,8 @@ status_t get_mmc_default_configuration(mmc_card_t *card)
     {
         // if current usdhc instance is not selected as MMC boot device, skip the boot time init.
         // user must init the MMC device by configure-memory command.
+        card->host.base = BOARD_USDHC1_BASEADDR;
+        card->host.sourceClock_Hz = BOARD_USDHC1_CLK_FREQ;
         return kStatus_Fail;
     }
 }
@@ -124,13 +114,28 @@ status_t get_mmc_default_configuration(mmc_card_t *card)
 #if BL_FEATURE_SD_MODULE
 status_t get_sd_default_configuration(sd_card_t *card)
 {
-    if ((ROM_OCOTP_SDMMC_TYPE_SEL_VALUE() == SD_SELECT) && (ROM_OCOTP_SDMMC_PORT_SEL_VALUE() == SD_SELECTED_INSTANCE))
+    if (ROM_OCOTP_SDMMC_TYPE_SEL_VALUE() == SD_SELECT)
     {
         // do something here.
+        switch(ROM_OCOTP_SDMMC_PORT_SEL_VALUE())
+        {
+            default:
+            case kSDMMC_USDHC_INSTANCE_1:
+                card->host.base = BOARD_USDHC1_BASEADDR;
+                card->host.sourceClock_Hz = BOARD_USDHC1_CLK_FREQ;
+                card->userConfig.powerPolarity = ROM_OCOTP_SD1_RST_ACTIVE_POLARITY_VALUE();
+                break;
+
+            case kSDMMC_USDHC_INSTANCE_2:
+                card->host.base = BOARD_USDHC2_BASEADDR;
+                card->host.sourceClock_Hz = BOARD_USDHC2_CLK_FREQ;
+                card->userConfig.powerPolarity = ROM_OCOTP_SD2_RST_ACTIVE_POLARITY_VALUE();
+                break;
+        }
+
         card->userConfig.timing = (sd_timing_mode_t)ROM_OCOTP_SD_SPEED_VALUE();
         card->userConfig.busWidth = (sd_data_bus_width_t)ROM_OCOTP_SD_BUS_WIDTH_VALUE();
         card->userConfig.enablePowerCycle = ROM_OCOTP_SDMMC_POWER_CYCLE_ENABLE_VALUE();
-        card->userConfig.powerPolarity = ROM_OCOTP_SD_RST_ACTIVE_POLARITY_VALUE();
 
         switch (ROM_OCOTP_SDMMC_PWR_CYCLE_SEL_VALUE())
         {
@@ -165,6 +170,8 @@ status_t get_sd_default_configuration(sd_card_t *card)
     {
         // if current usdhc instance is not selected as SD boot device, skip the boot time init.
         // user must init the SD device by configure-memory command.
+        card->host.base = BOARD_USDHC1_BASEADDR;
+        card->host.sourceClock_Hz = BOARD_USDHC1_CLK_FREQ;
         return kStatus_Fail;
     }
 }

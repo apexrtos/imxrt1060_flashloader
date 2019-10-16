@@ -583,13 +583,13 @@ static status_t MMC_SwitchVoltage(mmc_card_t *card, uint32_t *opCode)
         /* set the opcode */
         *opCode = MMC_OCR_V270TO360_MASK;
         /* power off the card first */
-        HOST_ENABLE_MMC_POWER(false);
+        HOST_ENABLE_MMC_POWER(card->host.base, false);
         /* power off time */
         SDMMC_Delay(1U);
         /*switch voltage to 3.3V*/
         HOST_SWITCH_VCC_TO_330V();
         /* repower the card */
-        HOST_ENABLE_MMC_POWER(true);
+        HOST_ENABLE_MMC_POWER(card->host.base, true);
         /* meet emmc spec, wait 1ms and 74 clocks */
         SDMMC_Delay(2U);
     }
@@ -603,13 +603,13 @@ static status_t MMC_SwitchVoltage(mmc_card_t *card, uint32_t *opCode)
         /* set the opcode */
         *opCode = MMC_OCR_V170TO195_MASK;
         /* power off the card first */
-        HOST_ENABLE_MMC_POWER(false);
+        HOST_ENABLE_MMC_POWER(card->host.base, false);
         /* power off time */
         SDMMC_Delay(1U);
         /* switch voltage to 1.8V */
         HOST_SWITCH_VCC_TO_180V();
         /* repower the card */
-        HOST_ENABLE_MMC_POWER(true);
+        HOST_ENABLE_MMC_POWER(card->host.base, true);
         /* meet emmc spec, wait 1ms and 74 clocks */
         SDMMC_Delay(2U);
     }
@@ -2416,20 +2416,20 @@ status_t MMC_BL_Init(mmc_card_t *card)
 
     if (card->userConfig.enablePowerCycle)
     {
-        HOST_INIT_MMC_POWER();
+        HOST_INIT_MMC_POWER(card->host.base);
 
         /* card power off */
-        HOST_ENABLE_MMC_POWER(card->userConfig.powerPolarity);
+        HOST_ENABLE_MMC_POWER(card->host.base, card->userConfig.powerPolarity);
         /* Delay some time to make card stable. */
         microseconds_delay(card->userConfig.powerDownDelay_US);
         /* card power on */
-        HOST_ENABLE_MMC_POWER(!card->userConfig.powerPolarity);
+        HOST_ENABLE_MMC_POWER(card->host.base, !card->userConfig.powerPolarity);
         /* Delay some time to make card stable. */
         microseconds_delay(card->userConfig.powerUpDelay_US);
     }
     if (card->userConfig.switch1V8)
     {
-        HOST_INIT_MMC_VSEL();
+        HOST_INIT_MMC_VSEL(card->host.base);
         HOST_SWITCH_VOLTAGE180V(card->host.base, true);
     }
 

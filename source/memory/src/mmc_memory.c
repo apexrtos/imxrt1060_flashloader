@@ -59,7 +59,7 @@ typedef struct _mmc_config
             uint32_t bus_width : 4;
             uint32_t timing_interface : 4;
             uint32_t boot_bus_width : 2;
-            uint32_t rsv2 : 2;
+            uint32_t usdhc_instance : 2;
             uint32_t boot_partition_enable : 3;
             uint32_t rsv3 : 1;
             uint32_t partition_access : 3;
@@ -320,9 +320,7 @@ status_t mmc_mem_init(void)
 {
     status_t status = kStatus_Success;
     mmc_card_t *card = &s_mmcContext.mmc;
-    // Init the basic variable, fill in the uSDHC base address and current frequency.
-    card->host.base = BOARD_MMC_HOST_BASEADDR;
-    card->host.sourceClock_Hz = MMC_HOST_CLK_FREQ;
+    // Init the basic variable
     card->hostVoltageWindowVCC = kMMC_VoltageWindows270to360; // Not really used for bootloader.
     card->hostVoltageWindowVCCQ = kMMC_VoltageWindow170to195; // Not really used for bootloader.
 
@@ -399,8 +397,20 @@ status_t mmc_mem_config(uint32_t *config)
 
     mmc_card_t *card = &s_mmcContext.mmc;
 
-    card->host.base = BOARD_MMC_HOST_BASEADDR;
-    card->host.sourceClock_Hz = MMC_HOST_CLK_FREQ;
+    switch (mmcConfig->word0.B.usdhc_instance)
+    {
+        default:
+        case kSDMMC_USDHC_INSTANCE_1:
+            card->host.base = BOARD_USDHC1_BASEADDR;
+            card->host.sourceClock_Hz = BOARD_USDHC1_CLK_FREQ;
+            break;
+
+        case kSDMMC_USDHC_INSTANCE_2:
+            card->host.base = BOARD_USDHC2_BASEADDR;
+            card->host.sourceClock_Hz = BOARD_USDHC2_CLK_FREQ;
+            break;
+    }
+
     card->hostVoltageWindowVCC = kMMC_VoltageWindows270to360; // Not really used for bootloader.
     card->hostVoltageWindowVCCQ = kMMC_VoltageWindow170to195; // Not really used for bootloader.
 

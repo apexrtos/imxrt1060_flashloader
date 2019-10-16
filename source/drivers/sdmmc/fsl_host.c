@@ -68,7 +68,7 @@ status_t CardInsertDetect(HOST_TYPE *hostBase)
     //    }
 
     HOST_CARD_DETECT_INIT();
-    HOST_ENABLE_SD_POWER(false);
+    HOST_ENABLE_SD_POWER(hostBase, false);
     /* Open card detection pin NVIC. */
     //    EnableIRQ(HOST_CARD_DETECT_IRQ);
 
@@ -92,7 +92,7 @@ status_t CardInsertDetect(HOST_TYPE *hostBase)
     /* Delay some time to make card stable. */
     microseconds_delay(500U);
     /* card power on */
-    HOST_ENABLE_SD_POWER(true);
+    HOST_ENABLE_SD_POWER(hostBase, true);
     /* Delay some time to make card stable. */
     microseconds_delay(500U);
 
