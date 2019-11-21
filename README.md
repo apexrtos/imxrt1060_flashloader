@@ -25,3 +25,10 @@ Built and tested using:
 
 Designed to work in conjunction with the NXP provided PC host tool:
 * blhost (V2.2.0)
+
+## Building
+1. Build within MCUXpresso IDE
+* 'Release' Build Configuration
+* Project -> Build All
+2. Generate bootable image using the NXP provided PC tool - elftosb:
+* `./elftosb -f imx -V -c imxrt1060_flashloader.bd -o ivt_flashloader.bin Release/imxrt1060_flashloader.s19`
